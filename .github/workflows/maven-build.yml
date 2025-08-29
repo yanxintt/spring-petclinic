@@ -25,5 +25,27 @@ jobs:
           java-version: ${{matrix.java}}
           distribution: 'adopt'
           cache: maven
-      - name: Build with Maven Wrapper
-        run: ./mvnw -B verify
+
+     # Build the project a
+      - name: Build with Maven Wrapper (skip tests)
+        run: ./mvnw clean package -DskipTests
+
+      # Run unit tests
+      - name: Run Unit Tests
+        run: ./mvnw test
+
+      # Upload test result reports a
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports
+
+      # Upload JaCoCo code coverage report
+      - name: Upload Code Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: target/site/jacoco
