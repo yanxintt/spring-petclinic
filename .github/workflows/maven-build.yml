@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,7 +25,7 @@ jobs:
           distribution: 'adopt'
           cache: maven
 
-     # Build the project a
+      # Build the project (skip tests)
       - name: Build with Maven Wrapper (skip tests)
         run: ./mvnw clean package -DskipTests
 
@@ -34,7 +33,7 @@ jobs:
       - name: Run Unit Tests
         run: ./mvnw test
 
-      # Upload test result reports a
+      # Upload test result reports
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,3 +48,11 @@ jobs:
         with:
           name: code-coverage-report
           path: target/site/jacoco
+
+      # Upload build reports
+      - name: Upload Build Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: target/surefire-reports
