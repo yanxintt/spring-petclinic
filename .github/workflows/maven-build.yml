@@ -41,7 +41,7 @@ jobs:
           name: test-results
           path: target/surefire-reports
 
-      # Upload JaCoCo code coverage report
+      # Upload JaCoCo code coverage reports
       - name: Upload Code Coverage Report
         if: always()
         uses: actions/upload-artifact@v4
