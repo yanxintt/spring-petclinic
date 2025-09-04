@@ -1,6 +1,8 @@
+# GitLab CI for Spring PetClinic (Maven + JDK 17)
 image: maven:3.9.6-eclipse-temurin-17
 
 before_script:
+  # ensure Maven Wrapper can run on the Linux runner
   - chmod +x mvnw
 
 cache:
@@ -11,25 +13,25 @@ cache:
 stages:
   - build
   - test
-  - package
 
 variables:
   MAVEN_OPTS: "-Dmaven.test.failure.ignore=false"
 
+# 1) Build the app (skip tests for speed) and publish the JAR as an artifact
 build:
   stage: build
   script:
-    - ./mvnw -B -q -DskipTests clean package
+    - ./mvnw -B -q clean package -DskipTests
   artifacts:
     when: always
     paths:
       - target/*.jar
-      - target/surefire-reports/
     expire_in: 1 week
 
+# 2) Run tests, publish JUnit + Surefire reports so they appear in GitLab UI
+#    We ignore failures so the job still finishes and reports are accessible.
 test:
   stage: test
-  # Do not fail the job if tests fail, but still publish JUnit + reports
   script:
     - ./mvnw -B -q test -Dmaven.test.failure.ignore=true
   artifacts:
@@ -38,15 +40,4 @@ test:
       - target/surefire-reports/
     reports:
       junit: target/surefire-reports/*.xml
-    expire_in: 1 week
-
-package:
-  stage: package
-  script:
-    - ./mvnw -B -q clean package
-  artifacts:
-    when: always
-    paths:
-      - target/*.jar
-      - target/surefire-reports/
     expire_in: 1 week
