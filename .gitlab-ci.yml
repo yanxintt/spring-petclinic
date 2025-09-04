@@ -1,4 +1,3 @@
-# .gitlab-ci.yml for Spring PetClinic (Maven + JDK 17)
 image: maven:3.9.6-eclipse-temurin-17
 
 before_script:
@@ -9,7 +8,13 @@ cache:
   paths:
     - .m2/repository
 
-stages: [build, test, package]
+stages:
+  - build
+  - test
+  - package
+
+variables:
+  MAVEN_OPTS: "-Dmaven.test.failure.ignore=false"
 
 build:
   stage: build
@@ -24,8 +29,8 @@ build:
 
 test:
   stage: test
+  # Do not fail the job if tests fail, but still publish JUnit + reports
   script:
-    # run tests but do not fail the job if any test fails
     - ./mvnw -B -q test -Dmaven.test.failure.ignore=true
   artifacts:
     when: always
