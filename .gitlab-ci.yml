@@ -1,4 +1,4 @@
-# .gitlab-ci.yml for Spring PetClinic (Maven + JDK 17))
+# .gitlab-ci.yml for Spring PetClinic (Maven + JDK 17)
 image: maven:3.9.6-eclipse-temurin-17
 
 before_script:
