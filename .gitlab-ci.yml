@@ -1,9 +1,15 @@
-# GitLab CI for Spring PetClinic (Maven + JDK 17)
+# GitLab CI for Spring PetClinic (mirror of GitHub Actions workflow)
 image: maven:3.9.6-eclipse-temurin-17
 
+# Make mvnw executable & keep environment stable (like GH runners)
 before_script:
-  # ensure Maven Wrapper can run on the Linux runner
   - chmod +x mvnw
+
+variables:
+  TZ: UTC
+  LANG: C.UTF-8
+  LC_ALL: C.UTF-8
+  MAVEN_OPTS: "-Dmaven.test.failure.ignore=false"
 
 cache:
   key: "maven-cache"
@@ -14,10 +20,12 @@ stages:
   - build
   - test
 
-variables:
-  MAVEN_OPTS: "-Dmaven.test.failure.ignore=false"
+# Run on pushes to main and on merge requests (like Actions' push/PR)
+rules:
+  - if: '$CI_COMMIT_BRANCH == "main"'
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-# 1) Build the app (skip tests for speed) and publish the JAR as an artifact
+# 1) Build JAR (skip tests), publish JAR artifact
 build:
   stage: build
   script:
@@ -28,16 +36,16 @@ build:
       - target/*.jar
     expire_in: 1 week
 
-# 2) Run tests, publish JUnit + Surefire reports so they appear in GitLab UI
-#    We ignore failures so the job still finishes and reports are accessible.
+# 2) Run unit tests, publish JUnit + Surefire + JaCoCo (if present)
 test:
   stage: test
   script:
-    - ./mvnw -B -q test -Dmaven.test.failure.ignore=true
+    - ./mvnw -B -q test
   artifacts:
     when: always
     paths:
       - target/surefire-reports/
+      - target/site/jacoco/          # collected if your POM generates jacoco
     reports:
       junit: target/surefire-reports/*.xml
     expire_in: 1 week
