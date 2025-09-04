@@ -1,0 +1,49 @@
+# .gitlab-ci.yml for Spring PetClinic (Maven + JDK 17)
+image: maven:3.9.6-eclipse-temurin-17
+
+cache:
+  key: "maven-cache"
+  paths:
+    - .m2/repository
+
+stages:
+  - build
+  - test
+  - package
+
+variables:
+  MAVEN_OPTS: "-Dmaven.test.failure.ignore=false"
+
+build:
+  stage: build
+  script:
+    - ./mvnw -B -q -DskipTests clean package
+  artifacts:
+    when: always
+    paths:
+      - target/*.jar
+      - target/surefire-reports/
+    expire_in: 1 week
+
+test:
+  stage: test
+  script:
+    - ./mvnw -B -q test
+  artifacts:
+    when: always
+    paths:
+      - target/surefire-reports/
+    reports:
+      junit: target/surefire-reports/*.xml
+    expire_in: 1 week
+
+package:
+  stage: package
+  script:
+    - ./mvnw -B -q clean package
+  artifacts:
+    when: always
+    paths:
+      - target/*.jar
+      - target/surefire-reports/
+    expire_in: 1 week
